@@ -17,10 +17,11 @@ export default function middleware(req: NextRequest) {
     const url = req.nextUrl;
 
     // 1. Get hostname (e.g. site1.localhost:3000, site2.lvh.me:3000, myapp.vercel.app)
-    const hostname = req.headers.get("host") || "";
+    const hostname = (req.headers.get("host") || "").toLowerCase();
 
     // The root domain is the platform domain (e.g., mysaas.com or my-app.vercel.app)
-    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000";
+    // FALLBACK: If env var is not set, we default to localhost for dev, but in prod you MUST set this.
+    const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000").toLowerCase();
 
     const searchParams = url.searchParams.toString();
     const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
