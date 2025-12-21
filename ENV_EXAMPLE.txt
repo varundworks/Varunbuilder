@@ -1,0 +1,3 @@
+# The main domain of your application (e.g., mysaas.com)
+# For local dev with lvh.me, you can leave this blank or use localhost:3000
+NEXT_PUBLIC_ROOT_DOMAIN=localhost:3000
