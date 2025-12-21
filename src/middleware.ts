@@ -2,50 +2,89 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
     matcher: [
-        /*
-         * Match all paths except for:
-         * 1. /api routes
-         * 2. /_next (Next.js internals)
-         * 3. /_static (inside /public)
-         * 4. all root files inside /public (e.g. /favicon.ico)
-         */
         "/((?!api/|_next/|_static/|[\\w-]+\\.\\w+).*)",
     ],
 };
 
 export default function middleware(req: NextRequest) {
     const url = req.nextUrl;
-
-    // 1. Get hostname (e.g. site1.localhost:3000, site2.lvh.me:3000, myapp.vercel.app)
     const hostname = (req.headers.get("host") || "").toLowerCase();
 
-    // The root domain is the platform domain (e.g., mysaas.com or my-app.vercel.app)
-    // FALLBACK: If env var is not set, we default to localhost for dev, but in prod you MUST set this.
-    const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000").toLowerCase();
-
     const searchParams = url.searchParams.toString();
-    const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
+    const path = `${url.pathname}${searchParams ? `?${searchParams}` : ""}`;
 
-    // 2. Determine if it's the root domain or a subdomain
-    // We check if the hostname is exactly the root domain OR 
-    // if it's a specific local dev domain like lvh.me:3000
-    const isRootDomain =
-        hostname === rootDomain ||
-        hostname === "lvh.me:3000" ||
-        hostname === "localhost:3000";
+    /**
+     * DEV domains
+     */
+    const isLocalhost =
+        hostname === "localhost:3000" || hostname === "127.0.0.1:3000";
 
-    if (isRootDomain) {
-        // Route to the /home directory where the main builder lives
+    const isLvh =
+        hostname === "lvh.me:3000";
+
+    /**
+     * Vercel handling
+     * Example:
+     * - yourapp.vercel.app        → root
+     * - mybrand.yourapp.vercel.app → subdomain
+     */
+    const vercelSuffix = ".vercel.app";
+    const isVercel = hostname.endsWith(vercelSuffix);
+
+    if (isLocalhost || isLvh) {
+        // localhost & lvh.me root → builder
+        if (hostname === "localhost:3000" || hostname === "lvh.me:3000" || !hostname.includes(".")) {
+            return NextResponse.rewrite(new URL(`/home${path}`, req.url));
+        }
+
+        // Attempt to extract subdomain for dev
+        // e.g. test.lvh.me:3000 -> test
+        if (hostname.includes(".lvh.me")) {
+            const subdomain = hostname.split(".")[0];
+            return NextResponse.rewrite(new URL(`/${subdomain}${path}`, req.url));
+        }
+    }
+
+    if (isVercel) {
+        const parts = hostname.replace(vercelSuffix, "").split(".");
+
+        // Root domain (yourapp.vercel.app)
+        // If parts is ["yourapp"], that's incorrect. hostname is "yourapp.vercel.app".
+        // replace(".vercel.app", "") -> "yourapp".
+        // split(".") -> ["yourapp"]. length is 1.
+        // BUT on Vercel, the "root" project domain is `varunbuilder.vercel.app`.
+        // If I access `varunbuilder.vercel.app`, hostname is `varunbuilder.vercel.app`.
+        // replaced: `varunbuilder`. parts: `["varunbuilder"]`.
+        // So it rewrites to `/home`. CORRECT.
+
+        // If I access `mybrand.varunbuilder.vercel.app`.
+        // replaced: `mybrand.varunbuilder`.
+        // parts: `["mybrand", "varunbuilder"]`. length is 2.
+        // It falls through to subdomain logic.
+
+        // Subdomain (mybrand.yourapp.vercel.app)
+        if (parts.length === 1) {
+            return NextResponse.rewrite(new URL(`/home${path}`, req.url));
+        }
+
+        const subdomain = parts[0];
+        return NextResponse.rewrite(new URL(`/${subdomain}${path}`, req.url));
+    }
+
+    /**
+     * Custom production domain
+     * Example: mybrand.mysaas.com
+     */
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.toLowerCase();
+
+    if (rootDomain && hostname === rootDomain) {
         return NextResponse.rewrite(new URL(`/home${path}`, req.url));
     }
 
-    // 3. Extract the subdomain
-    // This logic extracts the part before the first dot
-    // e.g., "site1.localhost:3000" -> "site1"
-    // e.g., "test.lvh.me:3000" -> "test"
-    // e.g., "mybrand.mysaas.com" -> "mybrand"
-    const subdomain = hostname.split(".")[0];
+    if (rootDomain && hostname.endsWith(`.${rootDomain}`)) {
+        const subdomain = hostname.replace(`.${rootDomain}`, "");
+        return NextResponse.rewrite(new URL(`/${subdomain}${path}`, req.url));
+    }
 
-    // 4. Rewrite to the dynamic [domain] route
-    return NextResponse.rewrite(new URL(`/${subdomain}${path}`, req.url));
+    return NextResponse.next();
 }
