@@ -3,6 +3,7 @@ import { getWebsiteBySubdomain } from "@/lib/db";
 import TemplateRenderer from "@/components/TemplateRenderer";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export default async function TenantPage(props: { params: Promise<{ domain: string }> }) {
     const params = await props.params;

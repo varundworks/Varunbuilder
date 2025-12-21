@@ -13,10 +13,9 @@ import { Website } from "./types";
  * 4. Ensure your DB schema matches the `Website` interface.
  */
 
-const globalForDb = global as unknown as { mockWebsites: Website[] };
-
-// Seed data with a professional example
-const initialWebsites: Website[] = [
+// EDGE-COMPATIBLE IN-MEMORY STORE
+// Using module-level storage instead of global to work in Edge runtime
+let websitesStore: Website[] = [
     {
         id: "seed-1",
         subdomain: "architect",
@@ -64,11 +63,7 @@ const initialWebsites: Website[] = [
     }
 ];
 
-export const mockWebsites = globalForDb.mockWebsites || initialWebsites;
-
-if (process.env.NODE_ENV !== "production") {
-    globalForDb.mockWebsites = mockWebsites;
-}
+export const mockWebsites = websitesStore;
 
 /**
  * Fetch a website by its unique subdomain
@@ -86,10 +81,10 @@ export async function getWebsiteBySubdomain(subdomain: string): Promise<Website 
     // instead of a 404. Ideally we'd use a real DB, but this prevents the "Broken App" feeling during demo.
     if (!site && subdomain !== "www") {
         return {
-            ...initialWebsites[0],
+            ...websitesStore[0],
             subdomain: subdomain,
             brand: {
-                ...initialWebsites[0].brand,
+                ...websitesStore[0].brand,
                 siteName: subdomain.charAt(0).toUpperCase() + subdomain.slice(1) // Capitalize subdomain as site name
             }
         };
