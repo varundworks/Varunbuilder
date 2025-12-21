@@ -11,7 +11,15 @@ export default function middleware(req: NextRequest) {
     const hostname = host.toLowerCase();
     const url = req.nextUrl.clone();
 
-    // Handle Vercel subdomain routing
+    // Don't rewrite if already on builder or API routes
+    if (url.pathname.startsWith("/builder") ||
+        url.pathname.startsWith("/api") ||
+        url.pathname.startsWith("/home") ||
+        url.pathname.startsWith("/preview")) {
+        return NextResponse.next();
+    }
+
+    // Handle Vercel subdomain routing (Production)
     if (hostname.endsWith(".vercel.app")) {
         // Extract subdomain: varun001.varunbuilder.vercel.app -> varun001
         const withoutVercel = hostname.replace(".vercel.app", "");
@@ -21,15 +29,20 @@ export default function middleware(req: NextRequest) {
         if (parts.length > 1) {
             const subdomain = parts[0]; // Extract first part (varun001)
 
-            // Don't rewrite if already on builder or API routes
-            if (url.pathname.startsWith("/builder") ||
-                url.pathname.startsWith("/api") ||
-                url.pathname.startsWith("/home") ||
-                url.pathname.startsWith("/preview")) {
-                return NextResponse.next();
-            }
-
             // Rewrite to /[domain] route
+            url.pathname = `/${subdomain}${url.pathname}`;
+            return NextResponse.rewrite(url);
+        }
+    }
+
+    // Handle local subdomain testing with lvh.me
+    if (hostname.includes(".lvh.me")) {
+        // Extract subdomain: test-site.lvh.me:3000 -> test-site
+        const withoutDomain = hostname.split(".lvh.me")[0];
+        const parts = withoutDomain.split(".");
+
+        if (parts.length > 0 && parts[0] !== "lvh") {
+            const subdomain = parts[0];
             url.pathname = `/${subdomain}${url.pathname}`;
             return NextResponse.rewrite(url);
         }
