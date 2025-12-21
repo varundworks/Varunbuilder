@@ -1,60 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
-    matcher: [
-        "/((?!api/|_next/|_static/|_vercel|[\\w-]+\\.\\w+).*)",
-    ],
+  matcher: ["/((?!api|_next|favicon.ico).*)"],
 };
 
 export default function middleware(req: NextRequest) {
-    const url = req.nextUrl;
-    const hostname = req.headers.get("host") || "";
-    const path = url.pathname;
+  try {
+    const url = req.nextUrl.clone();
+    const host = req.headers.get("host");
 
-    // Localhost development
-    if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
-        return NextResponse.rewrite(new URL(`/home${path}`, req.url));
+    // SAFETY CHECK
+    if (!host) {
+      return NextResponse.next();
     }
 
-    // lvh.me development
-    if (hostname.includes("lvh.me")) {
-        if (hostname === "lvh.me:3000") {
-            return NextResponse.rewrite(new URL(`/home${path}`, req.url));
-        }
-        // Extract subdomain (e.g., test.lvh.me:3000 -> test)
-        const subdomain = hostname.split(".")[0];
-        return NextResponse.rewrite(new URL(`/${subdomain}${path}`, req.url));
+    const hostname = host.toLowerCase();
+    const pathname = url.pathname;
+
+    // Local development
+    if (hostname === "localhost:3000") {
+      if (pathname === "/") {
+        url.pathname = "/home";
+        return NextResponse.rewrite(url);
+      }
+      return NextResponse.next();
     }
 
     // Vercel deployment
-    if (hostname.includes(".vercel.app")) {
-        // Extract everything before .vercel.app
-        const beforeVercel = hostname.replace(".vercel.app", "");
-        const parts = beforeVercel.split(".");
+    if (hostname.endsWith(".vercel.app")) {
+      const parts = hostname.replace(".vercel.app", "").split(".");
 
-        // Root: yourapp.vercel.app
-        if (parts.length === 1) {
-            return NextResponse.rewrite(new URL(`/home${path}`, req.url));
+      // Root app: yourapp.vercel.app
+      if (parts.length === 1) {
+        if (pathname === "/") {
+          url.pathname = "/home";
+          return NextResponse.rewrite(url);
         }
+        return NextResponse.next();
+      }
 
-        // Subdomain: mybrand.yourapp.vercel.app
-        const subdomain = parts[0];
-        return NextResponse.rewrite(new URL(`/${subdomain}${path}`, req.url));
+      // Subdomain: site.yourapp.vercel.app
+      const subdomain = parts[0];
+      url.pathname = `/${subdomain}${pathname}`;
+      return NextResponse.rewrite(url);
     }
 
-    // Custom domain
-    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
-    if (rootDomain) {
-        if (hostname === rootDomain) {
-            return NextResponse.rewrite(new URL(`/home${path}`, req.url));
-        }
-
-        if (hostname.endsWith(`.${rootDomain}`)) {
-            const subdomain = hostname.replace(`.${rootDomain}`, "");
-            return NextResponse.rewrite(new URL(`/${subdomain}${path}`, req.url));
-        }
-    }
-
-    // Default fallback: treat as root
-    return NextResponse.rewrite(new URL(`/home${path}`, req.url));
+    return NextResponse.next();
+  } catch (error) {
+    // NEVER CRASH MIDDLEWARE
+    return NextResponse.next();
+  }
 }
