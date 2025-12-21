@@ -63,8 +63,6 @@ let websitesStore: Website[] = [
     }
 ];
 
-export const mockWebsites = websitesStore;
-
 /**
  * Fetch a website by its unique subdomain
  */
@@ -72,7 +70,7 @@ export async function getWebsiteBySubdomain(subdomain: string): Promise<Website 
     // Simulate network latency (useful for testing loading states)
     await new Promise((resolve) => setTimeout(resolve, 80));
 
-    const site = mockWebsites.find((s) => s.subdomain === subdomain);
+    const site = websitesStore.find((s) => s.subdomain === subdomain);
 
     // DEMO MODE PATCH:
     // If on Vercel (or missing persistence), and we requested a subdomain that isn't found,
@@ -97,7 +95,7 @@ export async function getWebsiteBySubdomain(subdomain: string): Promise<Website 
  * Check if a subdomain is available
  */
 export async function isSubdomainUnique(subdomain: string): Promise<boolean> {
-    const existing = mockWebsites.find((s) => s.subdomain === subdomain);
+    const existing = websitesStore.find((s) => s.subdomain === subdomain);
     return !existing;
 }
 
@@ -111,7 +109,7 @@ export async function createWebsite(data: Omit<Website, "id" | "createdAt">): Pr
         createdAt: new Date().toISOString(),
     };
 
-    mockWebsites.push(newSite);
+    websitesStore.push(newSite);
     return newSite;
 }
 
@@ -119,9 +117,9 @@ export async function createWebsite(data: Omit<Website, "id" | "createdAt">): Pr
  * Update an existing website
  */
 export async function updateWebsite(id: string, updates: Partial<Website>): Promise<Website | null> {
-    const index = mockWebsites.findIndex(s => s.id === id);
+    const index = websitesStore.findIndex(s => s.id === id);
     if (index === -1) return null;
 
-    mockWebsites[index] = { ...mockWebsites[index], ...updates };
-    return mockWebsites[index];
+    websitesStore[index] = { ...websitesStore[index], ...updates };
+    return websitesStore[index];
 }
