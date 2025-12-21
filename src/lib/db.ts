@@ -44,6 +44,14 @@ const initialWebsites: Website[] = [
                 { id: "f1", title: "Edge Routing", description: "Zero-latency requests worldwide." },
                 { id: "f2", title: "Security First", description: "SOC2 compliant by default." }
             ],
+            gallery: {
+                title: "Our Work",
+                items: [
+                    { id: "g1", url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80", caption: "Server Architecture" },
+                    { id: "g2", url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80", caption: "Data Analytics" },
+                    { id: "g3", url: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80", caption: "Automation Board" }
+                ]
+            },
             contact: {
                 phone: "+1 (555) 000-1111",
                 email: "hello@architect.io"
@@ -51,7 +59,8 @@ const initialWebsites: Website[] = [
         },
         animationsEnabled: true,
         status: "PUBLISHED",
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        sectionOrder: ["hero", "about", "services", "features", "gallery", "contact"]
     }
 ];
 
