@@ -12,8 +12,9 @@ export default async function DomainPage(props: { params: Promise<{ domain: stri
     // Fetch site data from in-memory store
     const site = await getWebsiteBySubdomain(domain);
 
-    // Safe guard: If site doesn't exist or isn't published, show 404
-    if (!site || site.status !== "PUBLISHED") {
+    // Safe guard: If site doesn't exist, show 404
+    // Note: Demo mode fallback in getWebsiteBySubdomain handles missing sites
+    if (!site) {
         notFound(); // This shows proper Next.js 404 page
     }
 
