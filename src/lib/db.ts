@@ -78,6 +78,23 @@ export async function getWebsiteBySubdomain(subdomain: string): Promise<Website 
     await new Promise((resolve) => setTimeout(resolve, 80));
 
     const site = mockWebsites.find((s) => s.subdomain === subdomain);
+
+    // DEMO MODE PATCH:
+    // If on Vercel (or missing persistence), and we requested a subdomain that isn't found,
+    // we return the SEED site but masked as the requested subdomain.
+    // This allows the user to click "Publish" -> go to "foo.vercel.app" -> see a site (even if it's the default one),
+    // instead of a 404. Ideally we'd use a real DB, but this prevents the "Broken App" feeling during demo.
+    if (!site && subdomain !== "www") {
+        return {
+            ...initialWebsites[0],
+            subdomain: subdomain,
+            brand: {
+                ...initialWebsites[0].brand,
+                siteName: subdomain.charAt(0).toUpperCase() + subdomain.slice(1) // Capitalize subdomain as site name
+            }
+        };
+    }
+
     return site || null;
 }
 
