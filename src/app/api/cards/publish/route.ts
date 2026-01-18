@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isSubdomainUnique, createWebsite } from "@/lib/db";
+import { isSubdomainUnique, createCard } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
     try {
@@ -9,6 +9,10 @@ export async function POST(req: NextRequest) {
         // 1. Validation
         if (!subdomain) {
             return NextResponse.json({ error: "Subdomain is required" }, { status: 400 });
+        }
+
+        if (!body.name || !body.phones || body.phones.length === 0 || !body.phones[0]) {
+            return NextResponse.json({ error: "Name and phone are required" }, { status: 400 });
         }
 
         const subdomainRegex = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
@@ -23,31 +27,25 @@ export async function POST(req: NextRequest) {
         }
 
         // 3. Persist (Publish)
-        // We set status to PUBLISHED and spread the rest of the site data
-        const newWebsite = await createWebsite({
+        const newCard = await createCard({
             ...body,
             status: "PUBLISHED",
         });
 
         // 4. Generate Public URL
         const protocol = req.headers.get("x-forwarded-proto") || "http";
-        const host = req.headers.get("host") || "localhost:3000";
+        const host = req.headers.get("host") || "localhost:3001";
 
         let rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || host;
-        if (host.includes("localhost:3000")) {
-            rootDomain = "lvh.me:3000";
+        if (host.includes("localhost")) {
+            rootDomain = host.includes("3001") ? "lvh.me:3001" : "lvh.me:3000";
         }
 
-        let publicUrl = `${protocol}://${subdomain}.${rootDomain}`;
-
-        // Special handling for Vercel default domains (no wildcard support)
-        if (rootDomain.includes("vercel.app")) {
-            publicUrl = `${protocol}://${rootDomain}/${subdomain}`;
-        }
+        const publicUrl = `${protocol}://${subdomain}.${rootDomain}`;
 
         return NextResponse.json({
             success: true,
-            data: newWebsite,
+            data: newCard,
             url: publicUrl,
         });
 

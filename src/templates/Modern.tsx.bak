@@ -33,10 +33,6 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
     const secondaryColor = brand.secondaryColor;
     const lightPrimary = `${primaryColor}15`;
 
-    // New Color Variables with Fallbacks
-    const pageBg = brand.pageBackgroundColor || "#ffffff";
-    const sectionBg = brand.sectionBackgroundColor || "#ffffff";
-
     const motionProps = animationsEnabled ? {
         initial: { opacity: 0, y: 20 },
         whileInView: { opacity: 1, y: 0 },
@@ -51,8 +47,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                     <section key="hero" id="hero" style={{
                         padding: isMobile ? "4rem 1rem" : "8rem 5%",
                         textAlign: "center",
-                        background: `radial-gradient(circle at 50% 0%, ${lightPrimary} 0%, transparent 50%)`,
-                        backgroundColor: pageBg
+                        background: `radial-gradient(circle at 50% 0%, ${lightPrimary} 0%, transparent 50%)`
                     }}>
                         <motion.div {...motionProps}>
                             <h1 style={{
@@ -100,7 +95,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                 );
             case "about":
                 return (
-                    <section key="about" id="about" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: pageBg }}>
+                    <section key="about" id="about" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: "#fcfcfc" }}>
                         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? "3rem" : "5rem", alignItems: "center" }}>
                             <motion.div {...motionProps} style={{ order: isMobile ? 2 : 1 }}>
                                 <h2 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem", marginBottom: "1.5rem" }}>{about.title}</h2>
@@ -124,21 +119,15 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                 );
             case "services":
                 return (
-                    <section key="services" id="services" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: pageBg }}>
+                    <section key="services" id="services" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%" }}>
                         <h2 style={{ textAlign: "center", fontSize: isMobile ? "1.8rem" : "2.5rem", marginBottom: isMobile ? "2rem" : "4rem" }}>Our Services</h2>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
-                            {services.map((service: any, i: number) => (
+                            {services.map((service, i) => (
                                 <motion.div
                                     key={service.id}
                                     {...motionProps}
                                     transition={{ delay: i * 0.1 }}
-                                    style={{
-                                        padding: isMobile ? "1.5rem" : "3rem",
-                                        borderRadius: "24px",
-                                        border: "1px solid #f0f0f0",
-                                        textAlign: "center",
-                                        backgroundColor: sectionBg
-                                    }}
+                                    style={{ padding: isMobile ? "1.5rem" : "3rem", borderRadius: "24px", border: "1px solid #f0f0f0", textAlign: "center" }}
                                 >
                                     <div style={{ marginBottom: "1.5rem", display: "inline-block" }}>
                                         <RenderIcon name={service.icon} color={primaryColor} size={isMobile ? 24 : 32} />
@@ -152,10 +141,10 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                 );
             case "features":
                 return (
-                    <section key="features" id="features" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: pageBg }}>
+                    <section key="features" id="features" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: "#f9fafb" }}>
                         <h2 style={{ textAlign: "center", fontSize: isMobile ? "1.8rem" : "2.5rem", marginBottom: isMobile ? "2rem" : "5rem" }}>Core Features</h2>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
-                            {features.map((feature: any, i: number) => (
+                            {features.map((feature, i) => (
                                 <motion.div
                                     key={feature.id}
                                     {...motionProps}
@@ -163,7 +152,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                                     style={{
                                         padding: isMobile ? "1.5rem" : "3rem",
                                         borderRadius: "24px",
-                                        backgroundColor: sectionBg,
+                                        backgroundColor: "#fff",
                                         boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)"
                                     }}
                                 >
@@ -180,7 +169,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
             case "contact":
                 const mapUrl = getGoogleMapsEmbedUrl(contact.googleMapsUrl);
                 return (
-                    <section key="contact" id="contact" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: pageBg }}>
+                    <section key="contact" id="contact" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%" }}>
                         <div style={{
                             backgroundColor: secondaryColor,
                             borderRadius: isMobile ? "20px" : "32px",
@@ -237,7 +226,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                 );
             case "gallery":
                 return (
-                    <section key="gallery" id="gallery" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: pageBg }}>
+                    <section key="gallery" id="gallery" style={{ padding: isMobile ? "4rem 1rem" : "8rem 5%", backgroundColor: "#fff" }}>
                         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
                             <h2 style={{ fontSize: isMobile ? "1.8rem" : "2.5rem", marginBottom: "1rem" }}>{gallery?.title || "Gallery"}</h2>
                         </div>
@@ -248,7 +237,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                             maxWidth: "1200px",
                             marginInline: "auto"
                         }}>
-                            {gallery?.items?.map((item: any, i: number) => (
+                            {gallery?.items?.map((item, i) => (
                                 <motion.div
                                     key={item.id}
                                     {...motionProps}
@@ -286,7 +275,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
     };
 
     return (
-        <div style={{ backgroundColor: pageBg, color: "#000", overflowX: "hidden", scrollBehavior: "smooth", width: "100%", position: "relative" }}>
+        <div style={{ backgroundColor: "#fff", color: "#000", overflowX: "hidden", scrollBehavior: "smooth", width: "100%", position: "relative" }}>
             {/* Sticky Mobile Button */}
             {isMobile && contact.showStickyContact && (
                 <div style={{ position: "fixed", bottom: "1rem", right: "1rem", zIndex: 1000, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -316,7 +305,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
                 alignItems: "center",
                 padding: isMobile ? "1rem" : "1.5rem 5%",
                 borderBottom: "1px solid #f0f0f0",
-                backgroundColor: pageBg,
+                backgroundColor: "#fff",
                 position: "sticky",
                 top: 0,
                 zIndex: 100
@@ -352,7 +341,7 @@ export default function ModernTemplate({ site, isMobile = false }: TemplateProps
             {sectionOrder.map(renderSection)}
 
             {/* Footer */}
-            <footer style={{ padding: isMobile ? "3rem 1rem" : "5rem 5% 3rem", backgroundColor: "transparent", borderTop: "1px solid #f0f0f0" }}>
+            <footer style={{ padding: isMobile ? "3rem 1rem" : "5rem 5% 3rem", backgroundColor: "#fafafa", borderTop: "1px solid #f0f0f0" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1.5rem", flexDirection: isMobile ? "column" : "row", textAlign: "center" }}>
                     <div style={{ fontSize: isMobile ? "1.2rem" : "1.5rem", fontWeight: 800, color: primaryColor }}>{brand.siteName}</div>
                     <p style={{ color: "#999", fontSize: "0.8rem" }}>

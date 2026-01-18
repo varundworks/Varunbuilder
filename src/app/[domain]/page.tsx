@@ -1,50 +1,45 @@
 import { notFound } from "next/navigation";
-import { getWebsiteBySubdomain } from "@/lib/db";
-import TemplateRenderer from "@/components/TemplateRenderer";
+import { getCardBySubdomain, incrementViewCount } from "@/lib/db";
+import ModernCard from "@/templates/cards/ModernCard";
+import ElegantCard from "@/templates/cards/ElegantCard";
+import VibrantCard from "@/templates/cards/VibrantCard";
+import PeacefulCard from "@/templates/cards/PeacefulCard";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export default async function DomainPage(props: { params: Promise<{ domain: string }> }) {
+// Template component mapping
+const TEMPLATE_MAP: Record<string, any> = {
+    modern: ModernCard,
+    minimal: ModernCard,
+    professional: ModernCard,
+    elegant: ElegantCard,
+    vibrant: VibrantCard,
+    peaceful: PeacefulCard,
+};
+
+export default async function CardPage(props: { params: Promise<{ domain: string }> }) {
     const params = await props.params;
     const domain = params.domain;
 
-    // Fetch site data from in-memory store
-    const site = await getWebsiteBySubdomain(domain);
+    // Fetch card data from Firestore
+    const card = await getCardBySubdomain(domain);
 
-    // Safe guard: If site doesn't exist, show 404
-    // Note: Demo mode fallback in getWebsiteBySubdomain handles missing sites
-    if (!site) {
-        notFound(); // This shows proper Next.js 404 page
+    // If card doesn't exist, show 404
+    if (!card) {
+        notFound();
     }
 
-    // Render the published site
+    // Increment view count asynchronously
+    incrementViewCount(domain).catch(err => console.error("View count error:", err));
+
+    // Select the correct template component
+    const TemplateComponent = TEMPLATE_MAP[card.templateId || "modern"] || ModernCard;
+
+    // Render the business card with the selected template
     return (
         <div style={{ minHeight: "100vh" }}>
-            <TemplateRenderer site={site} />
-
-            {/* Platform Badge */}
-            <div style={{
-                position: "fixed",
-                bottom: "1.5rem",
-                right: "1.5rem",
-                padding: "0.6rem 1.2rem",
-                backgroundColor: "rgba(10, 10, 11, 0.9)",
-                color: "white",
-                borderRadius: "99px",
-                fontSize: "0.7rem",
-                fontWeight: 700,
-                pointerEvents: "none",
-                zIndex: 9999,
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem"
-            }}>
-                <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: site.brand.primaryColor }}></div>
-                Built with SiteBuilder.io
-            </div>
+            <TemplateComponent card={card} isMobile={false} />
         </div>
     );
 }

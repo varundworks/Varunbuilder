@@ -1,9 +1,9 @@
-import SiteBuilder from "@/components/SiteBuilder";
+import CardBuilder from "@/components/CardBuilder";
 
 export default function Home() {
     return (
-        <main style={{ height: "100vh", width: "100vw" }}>
-            <SiteBuilder />
+        <main>
+            <CardBuilder />
         </main>
     );
 }

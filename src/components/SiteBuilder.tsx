@@ -356,6 +356,8 @@ export default function SiteBuilder() {
             siteName: "VARUN",
             primaryColor: "#6366f1",
             secondaryColor: "#0f172a",
+            pageBackgroundColor: "#ffffff",
+            sectionBackgroundColor: "#ffffff",
             logoUrl: ""
         },
         sections: {
@@ -405,12 +407,20 @@ export default function SiteBuilder() {
     const [isPublishing, setIsPublishing] = useState(false);
     const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
+    const [rootDomain, setRootDomain] = useState(".lvh.me");
 
-    // Preview Scroll Reference
-    const previewRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const host = window.location.host;
+            if (host.includes("vercel.app")) {
+                setRootDomain(`.${host}/`); // Indicate path-based
+            } else if (!host.includes("localhost")) {
+                setRootDomain(`.${host}`);
+            }
+        }
+    }, []);
 
-    const scrollToSection = (sectionId: string) => {
+    const handlePublish = async () => {
         if (!previewRef.current) return;
 
         // Find the element within the preview container
@@ -784,6 +794,20 @@ export default function SiteBuilder() {
                                                 <span style={{ fontSize: "0.75rem", fontFamily: "monospace", textTransform: "uppercase" }}>{site.brand.secondaryColor}</span>
                                             </div>
                                         </div>
+                                        <div>
+                                            <div style={{ fontSize: "0.7rem", fontWeight: 700, marginBottom: "0.5rem" }}>Page Background</div>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem", borderRadius: "8px", border: "1px solid #f0f0f0" }}>
+                                                <input type="color" value={site.brand.pageBackgroundColor || "#ffffff"} onChange={e => updateBrand("pageBackgroundColor", e.target.value)} style={{ width: "30px", height: "30px", border: "none", borderRadius: "4px", cursor: "pointer" }} />
+                                                <span style={{ fontSize: "0.75rem", fontFamily: "monospace", textTransform: "uppercase" }}>{site.brand.pageBackgroundColor || "#ffffff"}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: "0.7rem", fontWeight: 700, marginBottom: "0.5rem" }}>Section Background</div>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem", borderRadius: "8px", border: "1px solid #f0f0f0" }}>
+                                                <input type="color" value={site.brand.sectionBackgroundColor || "#ffffff"} onChange={e => updateBrand("sectionBackgroundColor", e.target.value)} style={{ width: "30px", height: "30px", border: "none", borderRadius: "4px", cursor: "pointer" }} />
+                                                <span style={{ fontSize: "0.75rem", fontFamily: "monospace", textTransform: "uppercase" }}>{site.brand.sectionBackgroundColor || "#ffffff"}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -877,12 +901,26 @@ export default function SiteBuilder() {
                         {activeTab === 'publish' && (
                             <motion.div key="publish" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
                                 <div>
-                                    <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#aaa", marginBottom: "1rem", display: "block" }}>SUBDOMAIN</label>
+                                    <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#aaa", marginBottom: "1rem", display: "block" }}>SUBDOMAIN / SLUG</label>
                                     <div style={{ display: "flex", border: "1px solid #f0f0f0", borderRadius: "8px", overflow: "hidden" }}>
                                         <input placeholder="brand-name" value={site.subdomain} onChange={e => setSite(prev => ({ ...prev, subdomain: e.target.value.toLowerCase().replace(/\s+/g, '-') }))} style={{ flex: 1, padding: "0.75rem", border: "none", outline: "none" }} />
-                                        <div style={{ padding: "0.75rem", backgroundColor: "#f8f9fa", fontSize: "0.8rem", color: "#888", fontWeight: 600 }}>.lvh.me</div>
+                                        <div style={{ padding: "0.75rem", backgroundColor: "#f8f9fa", fontSize: "0.8rem", color: "#888", fontWeight: 600, display: "flex", alignItems: "center" }}>
+                                            {rootDomain.includes("vercel.app") ? (
+                                                <span style={{ color: "#666" }}> (via Path)</span>
+                                            ) : (
+                                                rootDomain
+                                            )}
+                                        </div>
                                     </div>
-                                    <p style={{ fontSize: "0.7rem", color: "#aaa", marginTop: "0.5rem" }}>Use only lowercase letters, numbers, and hyphens.</p>
+                                    <p style={{ fontSize: "0.7rem", color: "#aaa", marginTop: "0.5rem" }}>
+                                        {rootDomain.includes("vercel.app") 
+                                            ? `Your site will be at: ${rootDomain.replace(".", "")}${site.subdomain}`
+                                            : "Use only lowercase letters, numbers, and hyphens."
+                                        } <br />
+                                        <span style={{ color: "#888", fontStyle: "italic", marginTop: "0.25rem", display: "inline-block" }}>
+                                            Note: <b>.lvh.me</b> is a special domain that points to <b>localhost</b>. It allows you to test subdomains locally.
+                                        </span>
+                                    </p>
                                 </div>
 
                                 {publishedUrl ? (
